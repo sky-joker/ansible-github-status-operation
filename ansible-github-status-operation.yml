@@ -1,0 +1,80 @@
+---
+- name: GitHub Status Update Playbook
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: GitLab build status is running
+      uri:
+        url: "{{ tower_webhook_payload.repository.statuses_url | regex_replace('{sha}', tower_webhook_payload.after) }}"
+        method: POST
+        headers:
+          Authorization: "token {{ GitHub_TOKEN }}"
+        body: >-
+          {
+              "state": "pending",
+              "target_url": "https://{{ awx_ip }}/#/workflows/{{ tower_workflow_job_id }}",
+              "description": "The build success!",
+              "context": "continuous-integration/awx"
+          }
+        body_format: json
+        status_code: 201
+      tags:
+        - never
+        - pending
+
+    - name: GitLab build status is success
+      uri:
+        url: "{{ tower_webhook_payload.repository.statuses_url | regex_replace('{sha}', tower_webhook_payload.after) }}"
+        method: POST
+        headers:
+          Authorization: "token {{ GitHub_TOKEN }}"
+        body: >-
+          {
+              "state": "success",
+              "target_url": "https://{{ awx_ip }}/#/workflows/{{ tower_workflow_job_id }}",
+              "description": "The build success!",
+              "context": "continuous-integration/awx"
+          }
+        body_format: json
+        status_code: 201
+      tags:
+        - never
+        - success
+
+    - name: GitLab build status is failure
+      uri:
+        url: "{{ tower_webhook_payload.repository.statuses_url | regex_replace('{sha}', tower_webhook_payload.after) }}"
+        method: POST
+        headers:
+          Authorization: "token {{ GitHub_TOKEN }}"
+        body: >-
+          {
+              "state": "failure",
+              "target_url": "https://{{ awx_ip }}/#/workflows/{{ tower_workflow_job_id }}",
+              "description": "The build failure",
+              "context": "continuous-integration/awx"
+          }
+        body_format: json
+        status_code: 201
+      tags:
+        - never
+        - failure
+
+    - name: GitLab build status is error
+      uri:
+        url: "{{ tower_webhook_payload.repository.statuses_url | regex_replace('{sha}', tower_webhook_payload.after) }}"
+        method: POST
+        headers:
+          Authorization: "token {{ GitHub_TOKEN }}"
+        body: >-
+          {
+              "state": "error",
+              "target_url": "https://{{ awx_ip }}/#/workflows/{{ tower_workflow_job_id }}",
+              "description": "The build failure",
+              "context": "continuous-integration/awx"
+          }
+        body_format: json
+        status_code: 201
+      tags:
+        - never
+        - error
